@@ -1,4 +1,4 @@
-// Modify your server.js to add handling for media status updates
+// server/server.js
 const express = require("express");
 const http = require("http");
 const { WebSocketServer } = require("ws");
@@ -14,7 +14,7 @@ const wss = new WebSocketServer({ server });
 wss.on("connection", (ws) => {
   console.log("New WebSocket connection...");
 
-  // We'll store the roomId and role once the user joins
+  // We’ll store the roomId and role once the user joins
   let currentRoom = null;
   let currentRole = null;
 
@@ -54,23 +54,6 @@ wss.on("connection", (ws) => {
             }
           });
         }
-      } else if (type === "media-status-update") {
-        // Broadcast media status updates to all students in the room
-        const { roomId, audioEnabled, videoEnabled } = parsed;
-        if (rooms[roomId]) {
-          rooms[roomId].forEach((client) => {
-            // Only send to students
-            if (client.role === "student" && client.ws.readyState === 1) {
-              client.ws.send(
-                JSON.stringify({
-                  type: "media-status-update",
-                  audioEnabled,
-                  videoEnabled,
-                })
-              );
-            }
-          });
-        }
       }
     } catch (err) {
       console.error("Failed to parse message:", err);
@@ -78,7 +61,7 @@ wss.on("connection", (ws) => {
   });
 
   ws.on("close", () => {
-    // Remove this ws from the room if it's stored
+    // Remove this ws from the room if it’s stored
     if (currentRoom && rooms[currentRoom]) {
       rooms[currentRoom] = rooms[currentRoom].filter(
         (client) => client.ws !== ws
